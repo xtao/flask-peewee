@@ -6,7 +6,11 @@ from flask_peewee.utils import load_class
 
 
 class Database(object):
-    def __init__(self, app):
+    def __init__(self, app=None):
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app):
         self.app = app
 
         self.load_database()
