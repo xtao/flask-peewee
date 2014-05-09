@@ -26,11 +26,8 @@ class BaseUser(object):
 
 
 class Auth(object):
-    def __init__(self, app, db, user_model=None, prefix='/accounts', name='auth',
+    def __init__(self, app=None, db=None, user_model=None, prefix='/accounts', name='auth',
                  clear_session=False, default_next_url='/'):
-        self.app = app
-        self.db = db
-
         self.User = user_model or self.get_user_model()
 
         self.blueprint = self.get_blueprint(name)
@@ -39,6 +36,12 @@ class Auth(object):
         self.clear_session = clear_session
         self.default_next_url = default_next_url
 
+        if app and db:
+            self.init_app(app, db)
+
+    def init_app(self, app, db):
+        self.app = app
+        self.db = db
         self.setup()
 
     def get_context_user(self):
@@ -104,7 +107,7 @@ class Auth(object):
             @functools.wraps(fn)
             def inner(*args, **kwargs):
                 user = self.get_logged_in_user()
-                
+
                 if not user or not test_fn(user):
                     login_url = url_for('%s.login' % self.blueprint.name, next=get_next())
                     return redirect(login_url)
@@ -114,7 +117,7 @@ class Auth(object):
 
     def login_required(self, func):
         return self.test_user(lambda u: True)(func)
-    
+
     def admin_required(self, func):
         return self.test_user(lambda u: u.admin)(func)
 
@@ -152,7 +155,7 @@ class Auth(object):
 
             try:
                 return self.User.select().where(
-                    self.User.active==True, 
+                    self.User.active==True,
                     self.User.id==session.get('user_pk')
                 ).get()
             except self.User.DoesNotExist:
