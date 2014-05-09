@@ -28,7 +28,7 @@ class BaseUser(object):
 class Auth(object):
     def __init__(self, app=None, db=None, user_model=None, prefix='/accounts', name='auth',
                  clear_session=False, default_next_url='/'):
-        self.User = user_model or self.get_user_model()
+        self.User = user_model
 
         self.blueprint = self.get_blueprint(name)
         self.url_prefix = prefix
@@ -42,6 +42,8 @@ class Auth(object):
     def init_app(self, app, db):
         self.app = app
         self.db = db
+        if not self.User:
+            self.User = self.get_user_model()
         self.setup()
 
     def get_context_user(self):
